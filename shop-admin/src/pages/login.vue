@@ -35,6 +35,7 @@
             color="#626aef"
             class="w-[250px]"
             @click="onSubmit"
+            :loading="loading"
             >登 录</el-button
           >
         </el-form-item>
@@ -44,16 +45,19 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
-
-import { login } from "~/api/manager.js";
-
-import { ElNotification } from "element-plus";
+import { reactive, ref, onMounted, onBeforeUnmount } from "vue";
 
 import { useRouter } from "vue-router";
 
+import { toast } from "~/composables/util.js";
+
+import { useStore } from "vuex";
+
 // 初始化路由对象
 const router = useRouter();
+
+// 初始化store
+const store = useStore();
 
 // 表单所绑定的字段
 const form = reactive({
@@ -67,6 +71,9 @@ const rules = reactive({
   password: [{ required: true, message: "密码不能为空", trigger: "blur" }],
 });
 
+// 初始化loading状态
+const loading = ref(false);
+
 const formRef = ref(null);
 
 // 登录方法
@@ -74,32 +81,39 @@ const onSubmit = () => {
   formRef.value.validate((valid) => {
     if (!valid) return false;
 
-    login(form)
+    // 开启登录按钮loading加载
+    loading.value = true;
+
+    store
+      .dispatch("login", form)
       .then((response) => {
-        console.log("response=>", response.data.data);
-
         // 提示登录成功
-        ElNotification({
-          message: "登录成功",
-          type: "success",
-          duration: 3000,
-        });
-
-        // 存储token与用户信息
+        toast("登录成功");
 
         // 跳转到后台首页
         router.push("/");
       })
-      .catch((error) => {
-        console.log("error=>", error.response.data.msg);
-        ElNotification({
-          message: error.response.data.msg,
-          type: "error",
-          duration: 3000,
-        });
+      .finally(() => {
+        // 关闭登录按钮loading加载
+        loading.value = false;
       });
   });
 };
+
+// 监听回车事件方法
+const onKeyUp = (e) => {
+  if (e.key === "Enter") onSubmit();
+};
+
+// 添加键盘监听
+onMounted(() => {
+  document.addEventListener("keyup", onKeyUp);
+});
+
+// 移除键盘监听
+onBeforeUnmount(() => {
+  document.removeEventListener("keyup", onKeyUp);
+});
 </script>
 
 <style lang="postcss" scoped>

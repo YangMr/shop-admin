@@ -1,42 +1,38 @@
 <template>
   <div>
     后台首页
-    {{ count }}
 
-    <el-button @click="addCount">{{ count }}</el-button>
+    {{ $store.state.user.username }}
 
-    <el-button @click="addCount2">{{ count }}</el-button>
-
-    <hello-world></hello-world>
+    <el-button @click="handleLogout">退出登录</el-button>
   </div>
 </template>
 <script setup>
-import { ref, reactive } from "vue";
+import { showModal, toast } from "~/composables/util";
+import { logout } from "~/api/manager.js";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 
-import HelloWorld from "~/components/HelloWorld.vue";
+const store = useStore();
+const router = useRouter();
+// 退出登录
+const handleLogout = () => {
+  showModal("是否要退出登录？")
+    .then((response) => {
+      logout()
+        .then()
+        .finally(() => {
+          // 在vuex中清除cookie里面的token 以及vuex的user
+          store.dispatch("logout");
 
-// 在setup语法糖中定义的变量可以直接在模板中展示
-let count = ref(1);
-let form = reactive({
-  count: 2,
-});
-
-// 在setup语法糖中定义的方法可以直接在模板中调用
-const addCount = () => {
-  console.log("addCount");
-
-  count++;
-
-  console.log("count=>", count);
-};
-
-const addCount2 = () => {
-  count.value++;
-
-  console.log(count.value);
-
-  form.count++;
-
-  console.log("form.count=>", form.count);
+          // 跳转回登录页
+          router.push("/login");
+          // 提示退出登录
+          toast("退出登录成功");
+        });
+    })
+    .catch((error) => {
+      console.log("error", error);
+    });
 };
 </script>

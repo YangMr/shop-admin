@@ -7,6 +7,8 @@ import App from './App.vue'
 import router from "./router"
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+import store from "./store"
+
 const app = createApp(App)
 app.use(ElementPlus)
 
@@ -16,4 +18,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 import 'virtual:windi.css'
 app.use(router)
+
+import "./permission"
+import "nprogress/nprogress.css"
+
+app.use(store)
 app.mount('#app')
