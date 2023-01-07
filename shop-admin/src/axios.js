@@ -10,10 +10,14 @@ import {
     getToken
 } from "~/composables/auth.js"
 
+// 引入store
+import store from "./store"
 
 const service = axios.create({
     baseURL: '/api'
 })
+
+
 
 // 请求拦截器
 service.interceptors.request.use(function (config) {
@@ -34,9 +38,16 @@ service.interceptors.request.use(function (config) {
 service.interceptors.response.use(function (response) {
     return response.data.data;
 }, function (error) {
+    const msg = error.response.data.msg || "请求失败"
+
+    if (msg === '非法token,请先登录') {
+        store.dispatch("logout").finally(() => {
+            location.reload()
+        })
+    }
 
     // 请求失败错误信息提示;
-    toast(error.response.data.msg || "请求失败", "error")
+    toast(msg, "error")
 
     return Promise.reject(error);
 });

@@ -6,12 +6,17 @@ import {
 import Index from "~/pages/index.vue"
 import Login from "~/pages/login.vue"
 import NotFound from "~/pages/404.vue"
+import Admin from "~/layout/admin.vue"
 const routes = [{
-        path: '/',
-        component: Index,
-        meta: {
-            title: '后台首页'
-        }
+        path: "/",
+        component: Admin,
+        children: [{
+            path: '/',
+            component: Index,
+            meta: {
+                title: '后台首页'
+            }
+        }]
     },
     {
         path: '/login',

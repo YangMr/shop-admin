@@ -27,3 +27,12 @@ export const logout = () => {
         method: 'POST'
     })
 }
+
+// 修改密码接口
+export const updatepassword = (data = {}) => {
+    return axios({
+        url: '/admin/updatepassword',
+        method: 'POST',
+        data
+    })
+}
