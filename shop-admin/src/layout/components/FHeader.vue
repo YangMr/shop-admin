@@ -43,11 +43,11 @@
     </div>
   </div>
 
-  <el-drawer
-    v-model="showDrawer"
+  <form-drawer
+    ref="formDrawerRef"
     title="修改密码"
-    :close-on-click-modal="false"
-    size="45%"
+    destroyedOnClose
+    @submit="onSubmit"
   >
     <el-form
       ref="formRef"
@@ -69,79 +69,27 @@
         <el-input v-model.trim="form.repassword" placeholder="请输入确认密码">
         </el-input>
       </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit" :loading="loading"
-          >提交</el-button
-        >
-      </el-form-item>
     </el-form>
-  </el-drawer>
+  </form-drawer>
 </template>
 
 <script setup>
-import { showModal, toast } from "~/composables/util";
-import { logout, updatepassword } from "~/api/manager.js";
-import { useStore } from "vuex";
-import { useRouter } from "vue-router";
 import { useFullscreen } from "@vueuse/core";
-import { ref, reactive } from "vue";
+import FormDrawer from "~/components/FormDrawer.vue";
 
-const store = useStore();
-const router = useRouter();
+import { usePassword, useLogout } from "~/composables/useManager.js";
+
+const { form, rules, formRef, onSubmit, openRePasswordForm, formDrawerRef } =
+  usePassword();
+
+const { handleLogout } = useLogout();
 // isFullscreen是否是全屏 enter 进入全屏 exit退出全屏 toggle 切换全屏
 const { isFullscreen, toggle } = useFullscreen();
-// 控制抽屉显示或隐藏的状态
-const showDrawer = ref(false);
-
-// 表单所绑定的字段
-const form = reactive({
-  oldpassword: "",
-  password: "",
-  repassword: "",
-});
-
-// 表单校验规则
-const rules = reactive({
-  oldpassword: [{ required: true, message: "旧密码不能为空", trigger: "blur" }],
-  password: [{ required: true, message: "密码不能为空", trigger: "blur" }],
-  repassword: [{ required: true, message: "密码新不能为空", trigger: "blur" }],
-});
-
-// 初始化loading状态
-const loading = ref(false);
-
-const formRef = ref(null);
-
-// 登录方法
-const onSubmit = () => {
-  formRef.value.validate((valid) => {
-    if (!valid) return false;
-
-    // 开启登录按钮loading加载
-    loading.value = true;
-
-    // 调用修改密码接口
-    updatepassword(form).then((response) => {
-      // 关闭登录按钮loading加载
-      loading.value = false;
-
-      toast("修改密码成功,请重新登录");
-
-      // 清空vuex的user 以及cookie里面的token
-      store.dispatch("logout");
-
-      // 跳转回登录页
-      router.push("/login");
-    });
-  });
-};
 
 // 刷新
 const handleRefresh = () => {
   location.reload();
 };
-
-// 全屏
 
 // 下拉菜单方法
 const handleCommand = (command) => {
@@ -150,30 +98,10 @@ const handleCommand = (command) => {
       handleLogout();
       break;
     case "rePassword":
-      showDrawer.value = true;
+      // 调用打开修改密码弹窗方法
+      openRePasswordForm();
       break;
   }
-};
-
-// 退出登录
-const handleLogout = () => {
-  showModal("是否要退出登录？")
-    .then((response) => {
-      logout()
-        .then()
-        .finally(() => {
-          // 在vuex中清除cookie里面的token 以及vuex的user
-          store.dispatch("logout");
-
-          // 跳转回登录页
-          router.push("/login");
-          // 提示退出登录
-          toast("退出登录成功");
-        });
-    })
-    .catch((error) => {
-      console.log("error", error);
-    });
 };
 </script>
 

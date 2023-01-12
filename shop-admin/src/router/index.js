@@ -7,16 +7,25 @@ import Index from "~/pages/index.vue"
 import Login from "~/pages/login.vue"
 import NotFound from "~/pages/404.vue"
 import Admin from "~/layout/admin.vue"
+import GoodList from "~/pages/goods/list.vue"
 const routes = [{
         path: "/",
         component: Admin,
         children: [{
-            path: '/',
-            component: Index,
-            meta: {
-                title: '后台首页'
-            }
-        }]
+                path: '/',
+                component: Index,
+                meta: {
+                    title: '后台首页'
+                }
+            },
+            {
+                path: '/goods/list',
+                component: GoodList,
+                meta: {
+                    title: '商品管理'
+                }
+            },
+        ]
     },
     {
         path: '/login',
