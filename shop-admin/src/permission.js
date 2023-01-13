@@ -1,4 +1,7 @@
-import router from "~/router"
+import {
+    router,
+    addRoutes
+} from "~/router"
 import {
     getToken
 } from "~/composables/auth"
@@ -9,6 +12,8 @@ import {
     showFullLoading,
     hideFullLoading
 } from "~/composables/util"
+
+let hasGetInfo = false
 
 // 全局前置守卫
 router.beforeEach(async (to, from, next) => {
@@ -32,9 +37,16 @@ router.beforeEach(async (to, from, next) => {
         })
     }
 
+    let hasNewRoutes = false
     // 如果用户登录了， 则自动调用获取用户信息接口， 并存储到vuex
-    if (token) {
-        await store.dispatch("getInfo")
+    if (token && !hasGetInfo) {
+        const {
+            menus
+        } = await store.dispatch("getInfo")
+
+        hasGetInfo = true
+
+        hasNewRoutes = addRoutes(menus)
     }
 
     // 设置页面标题
@@ -42,7 +54,7 @@ router.beforeEach(async (to, from, next) => {
     let title = (to.meta.title ? to.meta.title : "") + ' - 九月云后台'
     document.title = title
 
-    next()
+    hasNewRoutes ? next(to.fullPath) : next()
 })
 
 // 全局后置守卫

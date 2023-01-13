@@ -1,8 +1,16 @@
 <template>
-  <div class="f-menu">
-    <el-menu default-active="2" class="border-0" @select="handleSelect">
-      <template v-for="(item, index) in asideMenus" :key="index">
+  <div class="f-menu" :style="{ width: $store.state.asideWidth }">
+    <el-menu
+      :default-active="defaultActive"
+      :collapse="isCollapse"
+      class="border-0"
+      @select="handleSelect"
+      :collapse-transition="false"
+      unique-opened
+    >
+      <template v-for="(item, index) in asideMenus">
         <el-sub-menu
+          :key="index"
           v-if="item.child && item.child.length > 0"
           :index="item.name"
         >
@@ -14,6 +22,7 @@
           </template>
           <el-menu-item
             v-for="(item2, index2) in item.child"
+            :key="index2"
             :index="item2.frontpath"
           >
             <el-icon>
@@ -22,7 +31,7 @@
             <span>{{ item2.name }}</span>
           </el-menu-item>
         </el-sub-menu>
-        <el-menu-item v-else :index="item.frontpath">
+        <el-menu-item v-else :index="item.frontpath" :key="item.frontpath">
           <el-icon>
             <component :is="item.icon"></component>
           </el-icon>
@@ -34,38 +43,26 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
+import { computed, ref } from "vue";
+import { useRouter, useRoute, onBeforeRouteUpdate } from "vue-router";
+import { useStore } from "vuex";
 const router = useRouter();
+const store = useStore();
+const route = useRoute();
 
 // 模拟的菜单数据
-const asideMenus = [
-  {
-    name: "面板",
-    icon: "help",
-  },
-  {
-    name: "后台面板",
-    icon: "help",
-    child: [
-      {
-        name: "主控台",
-        icon: "home-filled",
-        frontpath: "/",
-      },
-    ],
-  },
-  {
-    name: "商品管理",
-    icon: "shopping-bag",
-    child: [
-      {
-        name: "商品管理",
-        icon: "shopping-cart-full",
-        frontpath: "/goods/list",
-      },
-    ],
-  },
-];
+const asideMenus = computed(() => store.state.menus);
+
+// 设置菜单的默认选中项
+const defaultActive = ref(route.path);
+
+// 路由发生变化的钩子函数
+onBeforeRouteUpdate((to, from) => {
+  defaultActive.value = to.path;
+});
+
+// 控制菜单展开或者收起 false 展开 true收起
+const isCollapse = computed(() => !(store.state.asideWidth == "250px"));
 
 // 点击菜单触发方法
 const handleSelect = (e) => {
@@ -75,11 +72,15 @@ const handleSelect = (e) => {
 
 <style scoped lang="postcss">
 .f-menu {
-  width: 250px;
+  transition: all 0.2s;
   top: 64px;
   bottom: 0;
   left: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   @apply shadow-md fixed bg-light-50;
+}
+.f-menu::-webkit-scrollbar {
+  width: 0;
 }
 </style>
