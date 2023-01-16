@@ -50,7 +50,6 @@ router.beforeEach(async (to, from, next) => {
     }
 
     // 设置页面标题
-    console.log(to.meta.title)
     let title = (to.meta.title ? to.meta.title : "") + ' - 九月云后台'
     document.title = title
 
